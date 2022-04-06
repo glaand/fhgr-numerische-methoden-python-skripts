@@ -10,6 +10,7 @@ def NeAi(x, x_data, y_data):
         for j in range(i, n ):
             TAB[i][j]=((x-x_data[j-i])*TAB[i-1][j]
                         -(x-x_data[j])*TAB[i-1][j-1])/(x_data[j]-x_data[j-i]);
+    print(TAB)
     return TAB[n-1][n-1];
 
 def NeAiNu(x_data, y_data):

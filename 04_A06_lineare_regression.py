@@ -12,6 +12,7 @@ h_data_gem = np.array([273.,412.,556.,990.,1638.,1709.,3550.]);
 p_data_gem = np.array([976.9 ,973.6 ,955.5 ,902.3 ,834.2 ,824.7 ,649.]);
 # Berechnungen :
 y_data_gem = np.log(p_data_gem);
+print(y_data_gem)
 r = np.polyfit(h_data_gem , y_data_gem , dg);
 h_data = np.linspace(h_0 , h_E , N);
 y_data = np.polyval(r , h_data);
