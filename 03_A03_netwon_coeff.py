@@ -19,8 +19,8 @@ print(__file__);
 print('--------------------------------------------------------------------------------------');
 print('a)');
 # Parameter:
-x_data=np.array([4.,8.]);
-y_data=np.array([1.,-1.]);
+x_data=np.array([1,2,3]);
+y_data=np.array([2,4,8]);
 x_0=x_data[0]; x_E=x_data[-1]; N=3; lw=3; fig=1;
 # Berechnungen:
 n=np.size(y_data);
