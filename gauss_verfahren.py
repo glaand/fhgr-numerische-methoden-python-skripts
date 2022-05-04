@@ -1,71 +1,107 @@
 import numpy as np;
+import copy
 
-A = np.array([[2.,1.,0.,2.],[4.,2.,3.,3.],[-2.,-1.,6.,-4.],[-8.,-4.,9.,-11.],[2.,1.,-3.,3.]])
-b = np.array([6.,16.,2.,-12.,2.])
-G = np.c_[A, b]
-print("Startmatrix:")
-print(G)
-print("")
-Glen = len(G)
+class GaussJordanOperator:
 
-def findPivot(row):
-    print(f"Searching for pivot element in row: {row}")
-    pivot = None
-    index = 0
-    while index < len(row):
-        el = row[index]
-        if el != 0:
-            pivot = el
-            break
-        index += 1 
-    return pivot, index
+    def __init__(self, matrix, vector) -> None:
+        self.G = np.c_[matrix, vector]
 
-def divideRowElementsByPivot(pivot, i):
-    row = G[i]
-    print(f"Dividing elements of row by pivot({pivot}): {row}")
-    if pivot != 1:
-        for j in range(len(G[i])):
-            G[i][j] /= pivot
+    def findPivot(self, row):
+        pivot = None
+        index = 0
+        while index < len(row):
+            el = row[index]
+            if el != 0:
+                pivot = el
+                break
+            index += 1 
+        return pivot, index
 
-def multiplyAndSubtract(pivot_i, i, generator):
-    row = G[i]
-    print(f"Multiply and subtract the pivot row: {row}")
-    for j in generator:
-        row2 = G[j]
-        print(f"Target row: {row2}")
-        multiplier = row2[pivot_i]
-        print(f"Multiplier of row: {multiplier}")
-        for ci in range(len(row)):
-            G[j][ci] = G[j][ci] - G[i][ci]*multiplier
+    def divideRowElementsByPivot(self, pivot, i):
+        if pivot != 1:
+            for j in range(len(self.G[i])):
+                self.G[i][j] /= pivot
 
-# Normal Gauss
-for i in range(Glen):
-    row = G[i]
-    pivot, pivot_i = findPivot(row)
+    def multiplyAndSubtract(self, pivot_i, i, generator):
+        row = self.G[i]
+        for j in generator:
+            row2 = self.G[j]
+            multiplier = row2[pivot_i]
+            for ci in range(len(row)):
+                self.G[j][ci] = self.G[j][ci] - self.G[i][ci]*multiplier
 
-    if pivot == None:
-        print("No pivot found")
-        continue
+    def applyTolerance(self, i, tol):
+        for j in range(len(self.G[i])):
+            if np.abs(self.G[i][j]) <= tol:
+                self.G[i][j] = 0.0
 
-    divideRowElementsByPivot(pivot, i)
+    def partialPivotization(self):
+        biggestRow = 0
+        for row in range(len(self.G)):
+            for col in range(len(self.G[0]) - 1):
+                if np.abs(self.G[row][col]) > np.abs(self.G[biggestRow][col]):
+                    biggestRow = row
+        
+        tmp = copy.deepcopy(self.G[0])
+        for col in range(len(self.G[biggestRow])):
+            self.G[0][col] = self.G[biggestRow][col]
+            self.G[biggestRow][col] = tmp[col]
 
-    if i != Glen - 1:
-        multiplyAndSubtract(pivot_i, i, range(i+1, len(G)))
+    def run(self, mode="gauss", tol=-1):
+        # mode gauss/jordan
+        generator = range(len(self.G))
 
-# Gauss jordan
-print("")
-print("Gauss-Jordan")
-for i in reversed(range(1, Glen)):
-    row = G[i]
-    pivot, pivot_i = findPivot(row)
+        if mode == "gauss":
+            print("")
+            print("Normal Gauss")
+        else:
+            print("")
+            print("Gauss-Jordan")
 
-    if pivot == None:
-        print("No pivot found")
-        continue
 
-    multiplyAndSubtract(pivot_i, i, reversed(range(0, i)))
+        if tol < 0:
+            tol = np.max(self.G.shape)*np.linalg.norm(self.G,ord=np.inf)*np.finfo(np.float64).eps
 
-    
+        if mode == "jordan":
+            generator = reversed(range(1, len(self.G)))
 
-print("Finale matrix für Gauss-Jordan")
-print(G)
+
+        for i in generator:
+            row = self.G[i]
+
+            self.applyTolerance(i, tol)
+
+            pivot, pivot_i = self.findPivot(row)
+
+            if pivot == None:
+                print("No pivot found")
+                continue
+
+            if mode == "gauss":
+                self.divideRowElementsByPivot(pivot, i)
+
+            if mode == "gauss" and i != len(self.G) - 1:
+                self.multiplyAndSubtract(pivot_i, i, range(i+1, len(self.G)))
+            if mode == "jordan":
+                self.multiplyAndSubtract(pivot_i, i, reversed(range(0, i)))
+
+
+matrix = [[2.,-1.,3.], [-1.,1.,2.], [-4.,3.,-3.]]
+vector = [-4.,-3.,6.]
+
+
+gaussOpr = GaussJordanOperator(matrix, vector)
+print("Anfangsmatrix")
+print(gaussOpr.G)
+
+print("Matrix nach Spalten-Pivotisierung")
+gaussOpr.partialPivotization()
+print(gaussOpr.G)
+
+
+gaussOpr.run("gauss")
+print(gaussOpr.G)
+
+gaussOpr.run("jordan")
+print(gaussOpr.G)
+
