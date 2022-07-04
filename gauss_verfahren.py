@@ -35,16 +35,16 @@ class GaussJordanOperator:
             if np.abs(self.G[i][j]) <= tol:
                 self.G[i][j] = 0.0
 
-    def partialPivotization(self):
-        biggestRow = 0
-        for row in range(len(self.G)):
-            for col in range(len(self.G[0]) - 1):
+    def partialPivotization(self, i):
+        biggestRow = i
+        for row in range(i+1,self.G.shape[0]):
+            for col in range(self.G.shape[1] - 1):
                 if np.abs(self.G[row][col]) > np.abs(self.G[biggestRow][col]):
                     biggestRow = row
         
-        tmp = copy.deepcopy(self.G[0])
-        for col in range(len(self.G[biggestRow])):
-            self.G[0][col] = self.G[biggestRow][col]
+        tmp = copy.deepcopy(self.G[i])
+        for col in range(self.G.shape[1]):
+            self.G[i][col] = self.G[biggestRow][col]
             self.G[biggestRow][col] = tmp[col]
 
     def run(self, mode="gauss", tol=-1):
@@ -71,6 +71,9 @@ class GaussJordanOperator:
 
             self.applyTolerance(i, tol)
 
+            if mode == "gauss":
+                self.partialPivotization(i)
+
             pivot, pivot_i = self.findPivot(row)
 
             if pivot == None:
@@ -86,18 +89,19 @@ class GaussJordanOperator:
                 self.multiplyAndSubtract(pivot_i, i, reversed(range(0, i)))
 
 
-matrix = [[2.,-1.,3.], [-1.,1.,2.], [-4.,3.,-3.]]
-vector = [-4.,-3.,6.]
+matrix = [
+            [2,1,0,2], 
+            [4,2,3,3], 
+            [-2,-1,6,-4],
+            [-8,-4,9,-11],
+            [2,1,-3,3]
+        ]
+vector = [6,16,2,-12,2]
 
 
 gaussOpr = GaussJordanOperator(matrix, vector)
 print("Anfangsmatrix")
 print(gaussOpr.G)
-
-print("Matrix nach Spalten-Pivotisierung")
-gaussOpr.partialPivotization()
-print(gaussOpr.G)
-
 
 gaussOpr.run("gauss")
 print(gaussOpr.G)
