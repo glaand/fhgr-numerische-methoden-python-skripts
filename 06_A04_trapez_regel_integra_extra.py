@@ -28,6 +28,7 @@ def trapez_integra_extra(**kwargs):
     I_raw = I_data [-1];
     I_ext = NeAiNu(h_data , I_data);
     # Ausgabe :
+    print(h_data)
     print (' --------------------------------------------------');
     print(f" I_raw = { I_raw :#.{pr}g}");
     print(f" I_ext = { I_ext :#.{pr}g}");
